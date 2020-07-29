@@ -1,0 +1,602 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Adaptive Quiz</title>
+	<meta name="description" content="Test your knowledge through customizable topics and games.">
+	
+	<style>
+		body {
+			font-family: Arial;
+			font-size: 1.5em;
+		}
+		.skill {
+			color: white;
+			background: grey;
+		}
+		#preAnswer {
+		  animation: cssHide 0s 2s forwards;
+		  visibility: visible;
+		  opacity: 1;
+		  position: relative;
+		}
+
+		@keyframes cssHide {
+		  to   {
+				visibility: hidden; 
+			  	opacity: 0;
+		 	    position: absolute;
+			}
+		}
+		
+		#answer {
+		  animation: cssShow 0s 2s forwards;
+		  visibility: hidden; 
+		  opacity: 0;
+		  position: absolute;
+		}
+
+		@keyframes cssShow {
+		  to   { 
+			  visibility: visible;
+			  opacity: 1;
+			  position: relative;
+		  }
+		}
+	</style>
+</head>
+<body>
+	<img id="resultImg" style="display: none;
+	position: fixed;
+width: 450px;
+height: 600px;
+margin-left: -225px;
+margin-top: -350px;
+top: 50%;
+left: 50%;
+border: 15px outset orange">
+	<table height="100%" width="100%">
+		<tr>
+			<td colspan="3">
+				<span id="scorebox" style="float: left">
+					<span id="score_percent">100% (0/0)</span>
+					→
+					<span id="score" style="word-wrap: break-word; word-break: break-all;"></span>
+				</span>
+				<div style="float: right">
+					<table><tr><td>
+						<button onclick="window.open(getQueryViewerUrl(user.currState.topic.query), 'blank')" style="cursor: pointer"><div style="width: 20px"><svg viewBox="0 0 80 90" focusable=false><path d="m 0,0 30,45 0,30 10,15 0,-45 30,-45 Z"></path></svg></div>
+						</button>
+					</td><td>
+						 <select id="language" onchange="renderPage({language: this.options[this.selectedIndex].value.toLowerCase()})" onfocus="this.selectedIndex = 0">
+						  <option disabled>🌐</option>
+						  <option value="AF">Afrikanns</option>
+						  <option value="SQ">Albanian</option>
+						  <option value="AR">Arabic</option>
+						  <option value="HY">Armenian</option>
+						  <option value="EU">Basque</option>
+						  <option value="BN">Bengali</option>
+						  <option value="BG">Bulgarian</option>
+						  <option value="CA">Catalan</option>
+						  <option value="KM">Cambodian</option>
+						  <option value="ZH">Chinese (Mandarin)</option>
+						  <option value="HR">Croation</option>
+						  <option value="CS">Czech</option>
+						  <option value="DA">Danish</option>
+						  <option value="NL">Dutch</option>
+						  <option value="EN">English</option>
+						  <option value="ET">Estonian</option>
+						  <option value="FJ">Fiji</option>
+						  <option value="FI">Finnish</option>
+						  <option value="FR">French</option>
+						  <option value="KA">Georgian</option>
+						  <option value="DE">German</option>
+						  <option value="EL">Greek</option>
+						  <option value="GU">Gujarati</option>
+						  <option value="HE">Hebrew</option>
+						  <option value="HI">Hindi</option>
+						  <option value="HU">Hungarian</option>
+						  <option value="IS">Icelandic</option>
+						  <option value="ID">Indonesian</option>
+						  <option value="GA">Irish</option>
+						  <option value="IT">Italian</option>
+						  <option value="JA">Japanese</option>
+						  <option value="JW">Javanese</option>
+						  <option value="KO">Korean</option>
+						  <option value="LA">Latin</option>
+						  <option value="LV">Latvian</option>
+						  <option value="LT">Lithuanian</option>
+						  <option value="MK">Macedonian</option>
+						  <option value="MS">Malay</option>
+						  <option value="ML">Malayalam</option>
+						  <option value="MT">Maltese</option>
+						  <option value="MI">Maori</option>
+						  <option value="MR">Marathi</option>
+						  <option value="MN">Mongolian</option>
+						  <option value="NE">Nepali</option>
+						  <option value="NO">Norwegian</option>
+						  <option value="FA">Persian</option>
+						  <option value="PL">Polish</option>
+						  <option value="PT">Portuguese</option>
+						  <option value="PA">Punjabi</option>
+						  <option value="QU">Quechua</option>
+						  <option value="RO">Romanian</option>
+						  <option value="RU">Russian</option>
+						  <option value="SM">Samoan</option>
+						  <option value="SR">Serbian</option>
+						  <option value="SK">Slovak</option>
+						  <option value="SL">Slovenian</option>
+						  <option value="ES">Spanish</option>
+						</select>
+						<button style="font-size: 1em; cursor: pointer" onclick="alert(`
+Gameplay: 
+Answer the question. Customize your experience by changing the topic, difficulty level and quiz type.
+		
+User interface:
+❓➡️ (press right) - select a random question in the current topic
+📚 🎲 (press left) - select a new topic randomly
+🎮 🔴/🟢 (press up/down) - increase or decrease the difficulty level (see below)
+🌐 - set the language (defaults to English)
+TODO 🎮 🥇/🥉 - select a game based on ranking
+TODO Y (filter) - set filters for auto-selecting questions and games
+							
+Difficulty levels:
+0 - test revision mode, eg, slideshow, flashcard
+1 - binary testing mode, eg, yes/no or true/false options
+2 - standardized testing mode, eg, multiple choice
+3 - holistic testing mode, eg, fill in the blanks, multi-part answer`)">
+							ℹ️
+						</button>
+					</td></tr></table>
+				</div>
+		</tr>
+		<tr>
+			<td colspan="3" align="center" style="font-size: 40px">
+				<button id="harder" onclick="renderPage({taskChange: '+'})" style="cursor: pointer; font-size: 40px">🎮 🔴</button>
+				<!--button style="cursor: pointer; font-size: 40px">🥇</button--><br><br>
+			</td>
+		</tr>
+		<tr>
+			<td width="10%" style="font-size: 40px">
+				<button onclick="renderPage({taskChange: '!'})" style="cursor: pointer; font-size: 40px">📚 🎲</button>
+			</td>
+			<td width="80%" style="height: 80%" align="center"><div id="content">content</div></td>
+			<td width="10%" style="font-size: 40px">
+				<button onclick="renderPage({taskChange: '='})" style="cursor: pointer; font-size: 40px">❓ ➡️</button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" align="center" style="font-size: 40px">
+				<br><br>
+				<button id="easier" onclick="renderPage({taskChange: '-'})" style="cursor: pointer; font-size: 40px">🎮 🟢</button>
+				<!--button style="cursor: pointer; font-size: 40px" disabled>🥉</button-->
+			</td>
+		</tr>
+	</table>
+	<script>	/*
+social studies - countries and flags; countries and capitals; countries and maps; language/religion/ethnicity of country
+geography - location/size of rivers/mountains/etc
+chemistry - periodic table
+astronomy - planets, constellations
+history - kingdoms, civilizations, art movements, musical movements, wars
+finance - currency
+language - foods, animals, buildings, clothes, body parts, musical instruments, sports, adult vs baby, male vs female, etc.
+math - formulas; terms for geometry, matrix, etc; area of places with coords; percentage of size, height, etc; 
+		
+		A topic covers information about a specific aspect of a set of items based on a query.
+		{
+			id: 1,
+			title: "",
+			query: "",
+			lastQueryRun: ""
+			entries: [],
+		}
+	*/
+		
+		// TODO store in db
+		let topics, user = {}, ci = 0
+			
+			/*
+				Tasks are used to test proficiency. Two types:			
+				* Generic - adaptable for use with any topic. State is stored separately for each topic.
+				* Static - task independent of any topic. State is stored globally, not per topic.
+				
+				Level: make the task easier or harder so that user doesn't get demotivated.
+							Doing harder tasks means covering more ground in less time.
+					- if a task doesn't support a level, another task is picked from that level.
+			
+					Level guidelines:
+					- 0 - test revision. Eg, slideshow, flashcard
+					- 1 - binary testing. Eg, yes/no choice, single choice (with next button as 'skip')
+					- 2 - standardized testing. Eg, multiple choice.
+					- 3 - deep testing. Eg, enter complex answer.
+			*/
+			let tasks = {
+				"1": { // 0 - flashcard, 1: binary choice, 2: multiple choice, 3: fill in the blank
+					render: (entries, level) => {
+						// TODO render in backend
+						let showAnswersFn = `Array.from(document.getElementsByClassName('ansQ')).forEach(ansQ => ansQ.style.display = 'inline-block'); var sc = document.getElementById('score').innerHTML; var rt = [...sc].reduce((a, b) => (a + (b === '✅' ? 1 : 0)), 0); document.getElementById('score_percent').innerHTML = Math.round(rt*100/sc.length) + '% (' + rt + '/' + sc.length + ')&nbsp;&nbsp;'; showResultImg(sc[0] === '✅')`
+						
+						//      
+						let max
+						if (level < 2 || level === 3)
+							max = 1
+						else if (level == 2)
+							max = 4
+						if (entries && (level === 3 || entries.length >= max)) {
+							try {
+							    let entLen = entries.length, 
+									i = getRandomIndex(entLen), 
+									qst = "", 
+									ans = "",
+									ansArr = [], 
+									ansQArr = [], 
+									ansTracker = {},
+									wdIdRegex = /Q\d*$/
+								for (let count = 0; ansArr.length < max; count++) {
+									let entry = entries[(i + count) % entLen]
+									let qsta = ""
+									if (entry.qLabel && !entry.qLabel.value.match(wdIdRegex))
+										qsta += entry.qLabel.value
+									if (entry.q)
+										qsta = `<a href='${entry.q.value}' target='blank'>${qsta}</a>`
+									let rel = ""
+									if (entry.rLabel && !entry.rLabel.value.match(wdIdRegex))
+										rel = entry.rLabel.value
+									if (entry.r)
+										rel = `<a href='${entry.r.value}' target='blank' title="${entry.rDescription ? entry.rDescription.value : ''}">${rel}</a>`
+									if (rel.length > 0) {
+										rel = `: ${rel}`
+										qsta += rel
+									}
+									let ansQ = qsta
+									qsta += `${qsta === "" ? '' : '?'}<br>`
+									if (entry.qImg)
+										qsta += getImgUI(entry.qImg.value)
+									let descFunc = text => `<span title="${entry.qDescription.value}">${text}</span>`
+									if (entry.qDescription) {
+										qsta = descFunc(qsta)
+										ansQ = descFunc(ansQ)
+									}	
+									qsta = `${qsta}<br><br><br>`
+									if (count === 0) {
+										qst = qsta
+									}
+									if ((level !== 1 && !ansTracker[entry.q.value]) || (level === 1 && Math.random() < .5)) {
+										let answ = ""
+										if (entry.aLabel && !entry.rLabel.value.match(wdIdRegex)) {
+											let aLabel = entry.aLabel.value
+											if (entry.aLabel.datatype === "http://www.w3.org/2001/XMLSchema#dateTime")
+												aLabel = new Date(aLabel).toDateString()
+											answ = `${aLabel}<br>`
+										}	
+										if (entry.a)
+											answ = `<a href='${entry.a.value}' target='blank'>${answ === "" ? ℹ️ : answ}</a>`
+										if (entry.aImg)
+											answ += getImgUI(entry.aImg.value)
+										if (entry.aDescription)
+											answ = `<span title="${entry.aDescription.value}">${answ}</span>`
+										ansQ = `<div class='ansQ' style='display: none; ${count === 0 ? "background-color: yellow" : ""}'>🔑 ${ansQ}</div>`
+										if (Math.round(Math.random())) {
+											ansArr.push(answ)
+											ansQArr.push(ansQ)
+										} else {
+											ansArr.unshift(answ)
+											ansQArr.unshift(ansQ)
+										}	
+										if (ansTracker)
+											 ansTracker[entry.q.value] = true
+									}
+								}
+								if (level === 0) {
+									ans = `<div id="preAnswer" style="font-size: 80px">🤔</div><div id="answer">${ansArr[0]}</div>`
+								} else if (level === 1) {
+									ans = `<div>${ansArr[0]}</div>${ansQArr[0]}<br>
+									
+<button onclick="if (document.querySelector('.ansQ').style.display === 'none') { document.getElementById('score').innerHTML = (document.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '✅' : '🔻') + document.getElementById('score').innerHTML; ${showAnswersFn} }" style="font-size: 3em; cursor: pointer">✔️</button> 
+
+<button onclick="if (document.querySelector('.ansQ').style.display === 'none') { document.getElementById('score').innerHTML = (document.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '🔻' : '✅') + document.getElementById('score').innerHTML; ${showAnswersFn} }" style="font-size: 3em; cursor: pointer">❌</button>`
+								} else if (level === 2) {
+									ans = ansArr.map((a, i) => `<td><div style="cursor: pointer" onclick="if (document.querySelector('.ansQ').style.display === 'none') { this.style.border ='5px solid powderblue'; document.getElementById('score').innerHTML = (this.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '✅' : '🔻') + document.getElementById('score').innerHTML} ${showAnswersFn};  "><b>A${i + 1}.</b> ${a}${ansQArr[i]}</div></td>`).join('')
+									ans = `<table><tr>${ans}</tr></table>`
+								} else { // level === 3
+									ans = `<div><input onkeypress="showAnswer()" type="text"></input><a href="#" onclick="showAnswer()">↩️</a></div><br><div class="ansQ" style="display: none">${ansArr[0]}</div>`
+								}
+								return `${qst}${ans}`
+							} catch (e) {
+								return "errorx!"
+							}
+						} else {
+							return "error1!"
+						}
+					}
+				},
+				"2": {
+					// iframe url - web page, video, image, etc.
+					topic: "", // topic query
+					render: (topic, level) => {
+						return "blah"
+					}
+				}
+			}
+			
+			
+			// ranked work items
+			// topicId > level > taskIds
+			let rankings = {
+				"1": {
+					0: ["1"],
+					1: ["1"],
+					2: ["1"],
+					3: ["1"]
+				}
+			}
+			
+			let resultImg = document.getElementById('resultImg')
+			resultImg.onload = () => {
+				resultImg.style.display = 'block'
+				setTimeout(() => {
+					resultImg.style.display = 'none'
+					renderPage({taskChange: '='})
+					
+				}, 2000)
+			}
+			
+			document.body.onkeydown = onBodyKeydown
+			
+			renderPage({language: 'en'})
+			document.getElementById("language").value = 'EN'
+			
+			
+			////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////
+			
+			// Client Functions
+			
+			function showAnswer() {
+				var ansQ = document.querySelector('.ansQ')
+				if (event.keyCode === 13 && ansQ.style.display === 'none')
+					event.preventDefault(); ansQ.style.display = 'block'
+			}
+			
+			function onBodyKeydown(e) {
+				let cmd
+				switch (e.keyCode) {
+					case 32: showScore()
+							break
+					case 37: cmd = "!"
+							break
+					case 38: cmd = "+"
+							break
+					case 39: cmd = "="
+							break
+					case 40: cmd = "-"
+				}
+				if (cmd !== undefined) {
+					renderPage({taskChange: cmd})
+				}
+			}
+			
+			function showScore() {
+				var sb = document.getElementById('scorebox')
+				sb.style.display = 'block'
+				setTimeout(() => {sb.style.display = 'none'}, 10000)
+			}
+			
+			function showResultImg(pass) {
+					resultImg.src = `${pass ? 'https://source.unsplash.com/random/200x300/?happy' : 'https://source.unsplash.com/random/200×300/?sad'}&${new Date().getTime()}`
+					resultImg.style.borderColor = pass ? 'lightgreen' : 'red'
+			}
+			
+			// API Functions
+			
+			
+			function getTaskForTopicLevel(topicId, level) {
+
+				// TODO return task of actual topic
+				topicId = "1"
+
+				if (rankings[topicId] && rankings[topicId][level])
+					return rankings[topicId][level][0]
+				else
+					return undefined
+			}
+			
+			function getQueryExecUrl(query) {
+				return `https://query.wikidata.org/sparql?query=${query}&format=json`
+			}
+			
+			function getQueryViewerUrl(query) {
+				return `https://query.wikidata.org/#${query}`
+			}
+			
+			// server-side functions
+			
+			/* render page with new 
+				- topicDiff: assign next task based on topic choice, eg, similar ~, different !
+				- language
+				- taskChange - change task; does not check for current state
+					+ increase level
+					- decrease level
+					! change topic
+					= new task in same topic
+			   
+			   
+			*/
+			function renderPage(setting) {
+				if (setting) {
+					if (setting.language) {
+						topics = getTopics(setting.language)
+					}
+					document.getElementById("content").innerHTML = `<div style="font-size: 40px">⏳</div>`
+					let setLevel = false
+					if (!user.currState || setting.taskChange == "!") {
+						let topicId = getRandomTopicId()
+						let hasCurrState = user.currState !== undefined
+						user.currState = {
+							topic: topics.find(topic => topic.id === topicId),
+							level: hasCurrState ? user.currState.level : 1
+						}
+						setLevel = hasCurrState === undefined
+					}
+					// set valid topic level and task
+					let currLevel = user.currState.level
+					while ((setting.taskChange == "+" || setLevel) && ++currLevel < 3 && !getTaskForTopicLevel(user.currState.topic.id, currLevel)) {
+					}
+					while (setting.taskChange == "-" && --currLevel > 0 &&  !getTaskForTopicLevel(user.currState.topic.id, currLevel)) {
+					}
+					if (getTaskForTopicLevel(user.currState.topic.id, currLevel)) {
+						user.currState.level = currLevel
+						document.getElementById("harder").disabled = currLevel === 3 ? "disabled" : ""
+						document.getElementById("easier").disabled = currLevel === 0 ? "disabled" : ""
+						user.currState.taskId = getTaskForTopicLevel(user.currState.topic.id, currLevel)
+					}
+					let topic = topics.find(topic => topic.id === user.currState.topic.id)
+					if (topic.entries) {
+						document.getElementById("content").innerHTML = tasks[user.currState.taskId].render(topic.entries, user.currState.level)
+					} else { // quiz.query === "query"
+						fetch(getQueryExecUrl(topic.query))
+						.then(resp => {
+							return resp.json()
+						})
+						.then(data => {
+							topic.entries = data.results.bindings
+							document.getElementById("content").innerHTML = tasks[user.currState.taskId].render(topic.entries, user.currState.level)
+						})
+					}
+				}
+			}
+
+			
+			
+			function getRandomTopicId() {
+				// sequential
+				// let maxIdx = topics.length - 1
+				// let idx = ci
+				// ci = ci === maxIdx ? 0 : (ci + 1)
+				// return topics[idx].id
+				
+				// random
+				return topics[getRandomIndex(topics.length)].id
+			}
+			
+			function getRandomIndex(length) {
+				return Math.round(Math.random() * (length - 1))
+			}
+			
+			function getImgUI(img) {
+				if (img.startsWith('http:') || img.startsWith('https:') || img.startsWith('//'))
+					return `<div><img src="${img}?width=200px"></div>`
+				else
+					return `<div style="${img.length < 5 ? 'font-size: 100px' : ''}">${img}</div>`
+			}
+	
+			/*
+			
+			Variables:
+			q (required)
+			qLabel
+			qDescription
+			qImg
+			r
+			rLabel
+			a
+			aLabel
+			aDescription
+			aImg
+			
+			
+			2.0
+			type (new!)
+			subject (old question)
+			question (old relationship)
+			answer (same)
+			
+			
+			Ways to generate queries:
+			- let user create own query using query builder
+			- let user set values for vars of task's query
+			- let user paste queries from other sites
+				- map automatically or manually to vars
+			- self-generate random queries
+				- AI based
+				- pre-programmed algorithm trying out different combos
+			
+			Solution:
+			- single var customization (for initial examples)
+			- rest of query determined by task
+			- task has only one query as input (for initial examples)
+			
+			Games (with input UI for attributes):
+			- image (P18) of ... - input: items
+			- formulas (image-based property)- input: items
+				- geometry - area, weight, volume, diagonal/width/height
+				- calculus - integration/derivation, position/speed/acceleration, area
+			- "property" of ... - input: items, item property
+			- top trumps - input: items
+			- hot or not - input: items
+			- memory - input: items
+			- 20 questions / guess who - input: items???
+			- hangman - input: items
+			- word search puzzle - input: items
+			- spelling bee/jeopardy - show definition and pronunciation
+			- logo game with blur image filter
+			
+			
+			Queries:
+			- language learning
+			- anatomy/biology/zoology
+			- political systems
+			- kids games - alphabets, words, colors, etc.
+			- current affairs - people, places, things
+			- general knowledge??? enough existing quizzes
+			- tests/exams??? not precise enough
+			- paid tasks??? not precise enough
+			
+			https://slicker.me/javascript/fireworks.htm
+			
+			
+			*/
+			
+			function getTopics(lang) {
+				return [
+					{
+						id: "1",
+						title: "Capitals of Countries",
+						query: `SELECT%20DISTINCT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3Fa%20%3FaLabel%20%3FaDescription%20%3FaImg%20%3Fr%20%3FrLabel%20%3FrDescription%0AWHERE%0A%7B%0A%20%20%3Fq%20wdt%3AP31%20wd%3AQ3624078%20.%0A%20%20FILTER%20NOT%20EXISTS%20%7B%3Fq%20wdt%3AP31%20wd%3AQ3024240%7D%0A%20%20FILTER%20NOT%20EXISTS%20%7B%3Fq%20wdt%3AP31%20wd%3AQ28171280%7D%20.%0A%20%20%3Fq%20%3Frp%20%3Fa%0A%20%20%20%20%20%20%20%20%20bind%20%28wdt%3AP36%20as%20%3Frp%29%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Fr%20%3Fref%20%3Frp%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Fr%20rdf%3Atype%20wikibase%3AProperty%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Fa%20wdt%3AP18%20%3FaImg%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen"%20%7D%0A%7D`
+					},
+					{
+						id: "2",
+						title: "Flags of Countries",
+						query: `SELECT%20DISTINCT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3FaImg%20%3Fr%20%3FrLabel%20%3FrDescription%0AWHERE%0A%7B%0A%20%20%3Fq%20wdt%3AP31%20wd%3AQ3624078%20.%0A%20%20%3Fq%20%3Frp%20%3FaImg%20.%0A%20%20FILTER%20NOT%20EXISTS%20%7B%3Fq%20wdt%3AP31%20wd%3AQ3024240%7D%0A%20%20FILTER%20NOT%20EXISTS%20%7B%3Fq%20wdt%3AP31%20wd%3AQ28171280%7D%20.%0A%20%20%20%20%20%20%20%20%20bind%20%28wdt%3AP41%20as%20%3Frp%29%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Fr%20%3Fref%20%3Frp%20.%0A%20%20%20%20%20%20%20%20%20%20%20%20%3Fr%20rdf%3Atype%20wikibase%3AProperty%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen".%20%7D%0A%7D`
+					},
+					{
+						id: "5",
+						title: "Solar System Planets",
+						query: `SELECT%20DISTINCT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3FaImg%0AWHERE%0A%7B%0A%20%20%3Fq%20wdt%3AP31%20%3Fg%20.%0A%20%20%3Fg%20wdt%3AP279%20wd%3AQ17362350%20.%0A%20%20%3Fq%20wdt%3AP18%20%3FaImg%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen".%20%7D%0A%7D`
+					},
+					{
+						id: "11",
+						title: "Sports",
+						query: `SELECT%20DISTINCT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3FaImg%0AWHERE%0A%7B%0A%20%20%3Fq%20wdt%3AP31%20wd%3AQ31629%20.%0A%20%20%3Fq%20wdt%3AP18%20%3FaImg%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen".%20%7D%0A%7D`
+					},
+					{
+						id: "12",
+						title: "Fruits",
+						query: `SELECT%20DISTINCT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3FaImg%0AWHERE%0A%7B%0A%20%20%3Fq%20wdt%3AP279%20wd%3AQ3314483%20.%0A%20%20%3Fq%20wdt%3AP18%20%3FaImg%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen"%7D%0A%7D`
+					},
+					{
+						id: "18",
+						title: "Ancient Empires",
+						query: `SELECT%20DISTINCT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3FaImg%0AWHERE%0A%7B%0A%20%20%3Fq%20wdt%3AP31%20wd%3AQ48349%20.%0A%20%20%3Fq%20wdt%3AP242%20%3FaImg%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen".%20%7D%0A%7D`
+					},
+					{
+						id: "25",
+						title: "Big Cats Range",
+						query: `SELECT%20%3Fq%20%3FqLabel%20%3FqDescription%20%3Fr%20%3FrLabel%20%3FrDescription%20%3FaImg%0AWHERE%20%0A%7B%0A%20%20%3Fq%20wdt%3AP171%20wd%3AQ127960.%0A%20%20%3Fq%20%3Frp%20%3FaImg%20%20%0A%20%20bind%20%28wdt%3AP181%20as%20%3Frp%29%20.%0A%20%20%3Fr%20%3Fref%20%3Frp%20.%0A%20%20%3Fr%20rdf%3Atype%20wikibase%3AProperty%20.%0A%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20"${lang}%2Cen".%20%7D%0A%7D`
+					}
+				]
+			}		
+	</script>
+</body>
+</html>
