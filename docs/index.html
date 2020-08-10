@@ -293,11 +293,11 @@ math - formulas; terms for geometry, matrix, etc; area of places with coords; pe
 								} else if (level === 1) {
 									ans = `<div>${ansArr[0]}</div>${ansQArr[0]}<br>
 									
-<button onclick="if (document.querySelector('.ansQ').style.display === 'none') { document.getElementById('score').innerHTML = (document.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '✅' : '🔻') + document.getElementById('score').innerHTML; ${showAnswersFn} }" style="font-size: 3em; cursor: pointer">✔️</button> 
+<button onclick="if (document.querySelector('.ansQ').style.display === 'none') { document.getElementById('score').innerHTML = (document.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '✅' : '❌') + document.getElementById('score').innerHTML; ${showAnswersFn} }" style="font-size: 3em; cursor: pointer">✔️</button> 
 
-<button onclick="if (document.querySelector('.ansQ').style.display === 'none') { document.getElementById('score').innerHTML = (document.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '🔻' : '✅') + document.getElementById('score').innerHTML; ${showAnswersFn} }" style="font-size: 3em; cursor: pointer">❌</button>`
+<button onclick="if (document.querySelector('.ansQ').style.display === 'none') { document.getElementById('score').innerHTML = (document.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '❌' : '✅') + document.getElementById('score').innerHTML; ${showAnswersFn} }" style="font-size: 3em; cursor: pointer">❌</button>`
 								} else if (level === 2) {
-									ans = ansArr.map((a, i) => `<td><div style="cursor: pointer" onclick="if (document.querySelector('.ansQ').style.display === 'none') { this.style.border ='5px solid powderblue'; document.getElementById('score').innerHTML = (this.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '✅' : '🔻') + document.getElementById('score').innerHTML} ${showAnswersFn};  "><b>A${i + 1}.</b> ${a}${ansQArr[i]}</div></td>`).join('')
+									ans = ansArr.map((a, i) => `<td><div style="cursor: pointer" onclick="if (document.querySelector('.ansQ').style.display === 'none') { this.style.border ='5px solid powderblue'; document.getElementById('score').innerHTML = (this.querySelector('.ansQ').style.backgroundColor === 'yellow' ? '✅' : '❌') + document.getElementById('score').innerHTML} ${showAnswersFn};  "><b>A${i + 1}.</b> ${a}${ansQArr[i]}</div></td>`).join('')
 									ans = `<table><tr>${ans}</tr></table>`
 								} else { // level === 3
 									ans = `<div><input onkeypress="showAnswer()" type="text"></input><a href="#" onclick="showAnswer()">↩️</a></div><br><div class="ansQ" style="display: none">${ansArr[0]}</div>`
