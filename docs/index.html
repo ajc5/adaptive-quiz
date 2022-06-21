@@ -386,6 +386,7 @@ math - formulas; terms for geometry, matrix, etc; area of places with coords; pe
 			function showResultImg(pass) {
 					resultImg.src = `${pass ? 'https://source.unsplash.com/random/200x300/?happy' : 'https://source.unsplash.com/random/200×300/?sad'}&${new Date().getTime()}`
 					resultImg.style.borderColor = pass ? 'lightgreen' : 'red'
+					resultImg.style.filter = pass ? 'hue-rotate(90)' : 'hue-rotate(0)'
 			}
 			
 			// API Functions
