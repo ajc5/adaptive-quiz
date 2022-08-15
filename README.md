@@ -4,7 +4,7 @@
 An adaptive quiz app that supercharges your self-learning by letting you answer questions from different topics and at different difficulty levels. Earn qualifications as you gain new skills. Data is sourced directly from Wikidata. 
 
 Buttons:
-➡️ right - next question from the same topic
+- right - next question from the same topic
 - left - a question from a new topic
 - top - a harder game
 - bottom - an easier game
